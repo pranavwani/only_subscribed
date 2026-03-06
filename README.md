@@ -6,6 +6,7 @@ A lightweight web app that loads videos from your **logged-in YouTube subscripti
 
 - Pulls subscribed channels automatically (no manual channel entry).
 - Shows latest videos in grid or list.
+- Play videos directly inside the app via an embedded player modal.
 - No recommendations, no comments, no Shorts.
 - Lets you filter by subscribed channel.
 

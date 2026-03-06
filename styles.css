@@ -182,6 +182,50 @@ main {
   color: var(--accent);
 }
 
+.play-here {
+  margin-right: 0.6rem;
+}
+
+.player-dialog {
+  width: min(980px, 92vw);
+  border: 1px solid #2a3040;
+  border-radius: 14px;
+  background: #0f131c;
+  color: var(--text);
+  padding: 0.8rem;
+}
+
+.player-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.player-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.6rem;
+}
+
+.player-title {
+  margin: 0;
+  color: var(--muted);
+}
+
+.player-shell {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #05070b;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+#playerFrame {
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+
 @media (max-width: 860px) {
   main {
     grid-template-columns: 1fr;

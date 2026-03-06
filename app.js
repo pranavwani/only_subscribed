@@ -26,6 +26,10 @@ const refs = {
   signIn: document.getElementById("signInBtn"),
   signOut: document.getElementById("signOutBtn"),
   configHint: document.getElementById("configHint"),
+  playerDialog: document.getElementById("playerDialog"),
+  playerFrame: document.getElementById("playerFrame"),
+  playerTitle: document.getElementById("playerTitle"),
+  closePlayerBtn: document.getElementById("closePlayerBtn"),
   tpl: document.getElementById("videoTemplate"),
 };
 
@@ -36,6 +40,8 @@ refs.listBtn.addEventListener("click", () => setLayout("list"));
 refs.refresh.addEventListener("click", refreshFeed);
 refs.signIn.addEventListener("click", signIn);
 refs.signOut.addEventListener("click", signOut);
+refs.closePlayerBtn.addEventListener("click", closePlayer);
+refs.playerDialog.addEventListener("close", closePlayer);
 refs.filter.addEventListener("change", (event) => {
   state.filter = event.target.value;
   renderVideos();
@@ -302,9 +308,22 @@ function renderVideos() {
     node.querySelector(".thumb").src = video.thumb;
     node.querySelector(".title").textContent = video.title;
     node.querySelector(".meta").textContent = `${video.channelName} • ${formatDate(video.published)}`;
+    node.querySelector(".play-here").addEventListener("click", () => openPlayer(video));
     node.querySelector(".watch").href = video.url;
     refs.videos.append(node);
   });
+}
+
+function openPlayer(video) {
+  refs.playerTitle.textContent = `Now playing: ${video.title}`;
+  refs.playerFrame.src = `https://www.youtube-nocookie.com/embed/${video.id}?autoplay=1&rel=0`;
+  if (!refs.playerDialog.open) {
+    refs.playerDialog.showModal();
+  }
+}
+
+function closePlayer() {
+  refs.playerFrame.src = "";
 }
 
 function formatDate(date) {
