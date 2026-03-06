@@ -6,6 +6,7 @@ const APP_CONFIG = {
 const DISCOVERY_DOC = "https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest";
 const SCOPES = "https://www.googleapis.com/auth/youtube.readonly";
 const MAX_VIDEOS_PER_CHANNEL = 6;
+const TOKEN_STORAGE_KEY = "onlySubscribed.authToken";
 
 const state = {
   channels: [],
@@ -34,6 +35,7 @@ const refs = {
 };
 
 let tokenClient;
+let silentRestoreAttempted = false;
 
 refs.gridBtn.addEventListener("click", () => setLayout("grid"));
 refs.listBtn.addEventListener("click", () => setLayout("list"));
@@ -60,7 +62,9 @@ window.addEventListener("load", async () => {
 
   try {
     await initializeGoogleApi();
-    setStatus("Ready. Click Sign in with Google to load your subscribed feed.");
+    if (!state.signedIn) {
+      setStatus("Ready. Click Sign in with Google to load your subscribed feed.");
+    }
   } catch (error) {
     setStatus(`Google API init failed: ${errorMessage(error)}`);
   }
@@ -100,17 +104,77 @@ async function initializeGoogleApi() {
   tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: APP_CONFIG.clientId,
     scope: SCOPES,
-    callback: (response) => {
-      if (response?.error) {
-        setStatus(`Sign in failed: ${response.error}`);
-        return;
-      }
-
-      state.signedIn = true;
-      setStatus("Signed in. Loading your subscriptions...");
-      refreshFeed();
-    },
+    callback: onTokenResponse,
   });
+
+  restoreTokenFromStorage();
+  if (!state.signedIn) {
+    trySilentSessionRestore();
+  }
+}
+
+function onTokenResponse(response) {
+  if (response?.error) {
+    if (silentRestoreAttempted && (response.error === "interaction_required" || response.error === "login_required")) {
+      setStatus("Session expired. Click Sign in with Google.");
+      return;
+    }
+    setStatus(`Sign in failed: ${response.error}`);
+    return;
+  }
+
+  silentRestoreAttempted = false;
+  persistToken(response);
+  state.signedIn = true;
+  setStatus("Signed in. Loading your subscriptions...");
+  refreshFeed();
+}
+
+function persistToken(response) {
+  const expiresIn = Number(response.expires_in || 0);
+  const expiresAt = Date.now() + Math.max(expiresIn - 30, 0) * 1000;
+  const tokenRecord = {
+    access_token: response.access_token,
+    expiresAt,
+  };
+
+  localStorage.setItem(TOKEN_STORAGE_KEY, JSON.stringify(tokenRecord));
+  gapi.client.setToken({ access_token: response.access_token });
+}
+
+function restoreTokenFromStorage() {
+  const raw = localStorage.getItem(TOKEN_STORAGE_KEY);
+  if (!raw) return;
+
+  try {
+    const tokenRecord = JSON.parse(raw);
+    if (!tokenRecord?.access_token || !tokenRecord?.expiresAt) {
+      clearStoredToken();
+      return;
+    }
+
+    if (Date.now() >= Number(tokenRecord.expiresAt)) {
+      clearStoredToken();
+      return;
+    }
+
+    gapi.client.setToken({ access_token: tokenRecord.access_token });
+    state.signedIn = true;
+    setStatus("Session restored. Loading your subscriptions...");
+    refreshFeed();
+  } catch {
+    clearStoredToken();
+  }
+}
+
+function trySilentSessionRestore() {
+  if (!tokenClient || silentRestoreAttempted) return;
+  silentRestoreAttempted = true;
+  tokenClient.requestAccessToken({ prompt: "" });
+}
+
+function clearStoredToken() {
+  localStorage.removeItem(TOKEN_STORAGE_KEY);
 }
 
 function signIn() {
@@ -134,6 +198,7 @@ function signOut() {
     gapi.client.setToken("");
   }
 
+  clearStoredToken();
   state.signedIn = false;
   state.channels = [];
   state.videos = [];
