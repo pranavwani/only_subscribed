@@ -1,13 +1,24 @@
-# Subscribed Feed
+# Only Subscribed
 
-A lightweight web app that shows only videos from channels you subscribe to.
+A lightweight web app that directly loads videos from your **logged-in YouTube subscriptions**.
 
-## What it does
+## Core behavior
 
-- Shows latest videos from your subscribed channels.
-- Excludes Shorts.
-- No recommendations, comments, or unrelated feed items.
-- Switch between grid and list layouts.
+- Pulls your subscribed channels automatically (no manual channel entry).
+- Shows latest videos in grid or list.
+- No recommendations, no comments, no Shorts.
+- Lets you filter by specific subscribed channel.
+
+## Setup
+
+This app uses the YouTube Data API v3 from the browser.
+
+1. Create a Google Cloud project.
+2. Enable **YouTube Data API v3**.
+3. Create:
+   - an **API Key**
+   - an **OAuth 2.0 Client ID** (Web application)
+4. Add your local origin (for example `http://localhost:4173`) to allowed JavaScript origins.
 
 ## Run locally
 
@@ -15,13 +26,13 @@ A lightweight web app that shows only videos from channels you subscribe to.
 python -m http.server 4173
 ```
 
-Then open `http://localhost:4173`.
+Open `http://localhost:4173`.
 
-## How to use
+## Use
 
-1. Add a YouTube channel URL (`/channel/UC...`) or a channel ID (`UC...`).
-2. Click **Refresh feed**.
-3. Use the dropdown to filter to a specific channel.
-4. Toggle Grid/List as preferred.
+1. Paste your OAuth Client ID and API Key.
+2. Click **Save keys**.
+3. Click **Sign in with Google**.
+4. Click **Refresh subscriptions feed**.
 
-Subscriptions are stored in `localStorage`.
+The app then fetches your subscriptions from your logged-in account automatically.

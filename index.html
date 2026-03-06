@@ -3,14 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Subscribed Feed</title>
+    <title>Only Subscribed</title>
     <link rel="stylesheet" href="styles.css" />
+    <script async defer src="https://accounts.google.com/gsi/client"></script>
+    <script async defer src="https://apis.google.com/js/api.js"></script>
   </head>
   <body>
     <header class="topbar">
       <div>
-        <h1>Subscribed Feed</h1>
-        <p>Only your subscribed channels. No recommendations, comments, or Shorts.</p>
+        <h1>Only Subscribed</h1>
+        <p>Directly shows videos from your YouTube subscriptions only. No recommendations, comments, or Shorts.</p>
       </div>
       <div class="layout-switch" role="group" aria-label="Layout switcher">
         <button id="gridBtn" class="active">Grid</button>
@@ -19,25 +21,36 @@
     </header>
 
     <section class="controls">
-      <form id="channelForm">
-        <label for="channelInput">Add channel URL or channel ID</label>
-        <div class="input-row">
-          <input id="channelInput" required placeholder="https://www.youtube.com/channel/UC..." />
-          <button type="submit">Add</button>
-        </div>
-      </form>
+      <div class="auth-row">
+        <button id="signInBtn">Sign in with Google</button>
+        <button id="signOutBtn" class="ghost">Sign out</button>
+        <button id="refreshBtn">Refresh subscriptions feed</button>
+      </div>
+
+      <div class="config-row">
+        <label>
+          Google OAuth Client ID
+          <input id="clientIdInput" placeholder="xxxxx.apps.googleusercontent.com" />
+        </label>
+        <label>
+          YouTube Data API Key
+          <input id="apiKeyInput" placeholder="AIza..." />
+        </label>
+        <button id="saveConfigBtn" class="ghost">Save keys</button>
+      </div>
+
       <div class="sub-controls">
-        <button id="refreshBtn">Refresh feed</button>
         <select id="channelFilter">
-          <option value="all">All channels</option>
+          <option value="all">All subscriptions</option>
         </select>
       </div>
-      <p class="helper">Tip: export your YouTube subscriptions (Google Takeout OPML), then paste channel URLs one by one.</p>
+
+      <p class="helper">One-time setup: add your OAuth Client ID and API key, click <b>Save keys</b>, then sign in. After that, this app fetches your subscriptions automatically from your logged-in YouTube account.</p>
     </section>
 
     <main>
       <section id="subscriptionPanel" class="panel">
-        <h2>Subscriptions</h2>
+        <h2>Your subscriptions</h2>
         <ul id="subscriptions"></ul>
       </section>
 
