@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Subscribed Feed</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <h1>Subscribed Feed</h1>
+        <p>Only your subscribed channels. No recommendations, comments, or Shorts.</p>
+      </div>
+      <div class="layout-switch" role="group" aria-label="Layout switcher">
+        <button id="gridBtn" class="active">Grid</button>
+        <button id="listBtn">List</button>
+      </div>
+    </header>
+
+    <section class="controls">
+      <form id="channelForm">
+        <label for="channelInput">Add channel URL or channel ID</label>
+        <div class="input-row">
+          <input id="channelInput" required placeholder="https://www.youtube.com/channel/UC..." />
+          <button type="submit">Add</button>
+        </div>
+      </form>
+      <div class="sub-controls">
+        <button id="refreshBtn">Refresh feed</button>
+        <select id="channelFilter">
+          <option value="all">All channels</option>
+        </select>
+      </div>
+      <p class="helper">Tip: export your YouTube subscriptions (Google Takeout OPML), then paste channel URLs one by one.</p>
+    </section>
+
+    <main>
+      <section id="subscriptionPanel" class="panel">
+        <h2>Subscriptions</h2>
+        <ul id="subscriptions"></ul>
+      </section>
+
+      <section class="panel feed-panel">
+        <div class="feed-head">
+          <h2>Latest videos</h2>
+          <p id="statusText" class="status">Ready</p>
+        </div>
+        <div id="videos" class="videos grid"></div>
+      </section>
+    </main>
+
+    <template id="videoTemplate">
+      <article class="video-card">
+        <img class="thumb" alt="Video thumbnail" loading="lazy" />
+        <div class="video-info">
+          <h3 class="title"></h3>
+          <p class="meta"></p>
+          <a class="watch" target="_blank" rel="noopener noreferrer">Watch on YouTube</a>
+        </div>
+      </article>
+    </template>
+
+    <script src="app.js"></script>
+  </body>
+</html>
