@@ -1,6 +1,5 @@
 :root {
   color-scheme: dark;
-  --bg: #111318;
   --card: #1b1f27;
   --surface: #222735;
   --text: #e9ecf1;
@@ -35,8 +34,14 @@ main {
   padding: 1.5rem 0 0.5rem;
 }
 
-.topbar h1 { margin: 0; }
-.topbar p { margin: 0.3rem 0 0; color: var(--muted); }
+.topbar h1 {
+  margin: 0;
+}
+
+.topbar p {
+  margin: 0.3rem 0 0;
+  color: var(--muted);
+}
 
 .layout-switch button,
 button {
@@ -65,7 +70,6 @@ button.ghost {
 }
 
 .auth-row,
-.config-row,
 .sub-controls {
   display: flex;
   gap: 0.6rem;
@@ -73,14 +77,6 @@ button.ghost {
   margin-bottom: 0.8rem;
 }
 
-.config-row label {
-  display: grid;
-  gap: 0.35rem;
-  min-width: min(430px, 100%);
-  font-weight: 600;
-}
-
-input,
 select {
   background: #0f131c;
   color: var(--text);
@@ -139,8 +135,13 @@ main {
   gap: 0.9rem;
 }
 
-.videos.grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
-.videos.list { grid-template-columns: 1fr; }
+.videos.grid {
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+
+.videos.list {
+  grid-template-columns: 1fr;
+}
 
 .video-card {
   background: var(--card);
@@ -161,12 +162,32 @@ main {
   display: block;
 }
 
-.video-info { padding: 0.75rem; }
-.title { margin: 0; font-size: 1rem; line-height: 1.35; }
-.meta { color: var(--muted); margin: 0.45rem 0; font-size: 0.88rem; }
-.watch { color: var(--accent); }
+.video-info {
+  padding: 0.75rem;
+}
+
+.title {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.meta {
+  color: var(--muted);
+  margin: 0.45rem 0;
+  font-size: 0.88rem;
+}
+
+.watch {
+  color: var(--accent);
+}
 
 @media (max-width: 860px) {
-  main { grid-template-columns: 1fr; }
-  .videos.list .video-card { grid-template-columns: 1fr; }
+  main {
+    grid-template-columns: 1fr;
+  }
+
+  .videos.list .video-card {
+    grid-template-columns: 1fr;
+  }
 }

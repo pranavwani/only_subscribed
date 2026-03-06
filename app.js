@@ -1,5 +1,6 @@
-const STORAGE_KEYS = {
-  config: "onlySubscribed.config",
+const APP_CONFIG = {
+  clientId: "REPLACE_WITH_YOUR_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com",
+  apiKey: "REPLACE_WITH_YOUR_YOUTUBE_DATA_API_KEY",
 };
 
 const DISCOVERY_DOC = "https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest";
@@ -7,7 +8,6 @@ const SCOPES = "https://www.googleapis.com/auth/youtube.readonly";
 const MAX_VIDEOS_PER_CHANNEL = 6;
 
 const state = {
-  config: loadConfig(),
   channels: [],
   videos: [],
   layout: "grid",
@@ -25,23 +25,17 @@ const refs = {
   refresh: document.getElementById("refreshBtn"),
   signIn: document.getElementById("signInBtn"),
   signOut: document.getElementById("signOutBtn"),
-  clientIdInput: document.getElementById("clientIdInput"),
-  apiKeyInput: document.getElementById("apiKeyInput"),
-  saveConfigBtn: document.getElementById("saveConfigBtn"),
+  configHint: document.getElementById("configHint"),
   tpl: document.getElementById("videoTemplate"),
 };
 
 let tokenClient;
-
-refs.clientIdInput.value = state.config.clientId || "";
-refs.apiKeyInput.value = state.config.apiKey || "";
 
 refs.gridBtn.addEventListener("click", () => setLayout("grid"));
 refs.listBtn.addEventListener("click", () => setLayout("list"));
 refs.refresh.addEventListener("click", refreshFeed);
 refs.signIn.addEventListener("click", signIn);
 refs.signOut.addEventListener("click", signOut);
-refs.saveConfigBtn.addEventListener("click", saveConfigFromInputs);
 refs.filter.addEventListener("change", (event) => {
   state.filter = event.target.value;
   renderVideos();
@@ -50,66 +44,62 @@ refs.filter.addEventListener("change", (event) => {
 renderSubscriptions();
 renderFilterOptions();
 renderVideos();
+showConfigHint();
 
 window.addEventListener("load", async () => {
   if (!window.gapi || !window.google) {
-    setStatus("Google scripts did not load. Check your connection and refresh.");
+    setStatus("Google scripts did not load. Check your internet and refresh.");
     return;
   }
 
   try {
     await initializeGoogleApi();
-    setStatus("Ready. Save keys and sign in to load your subscribed feed.");
+    setStatus("Ready. Click Sign in with Google to load your subscribed feed.");
   } catch (error) {
-    setStatus(`Google API init failed: ${error.message}`);
+    setStatus(`Google API init failed: ${errorMessage(error)}`);
   }
 });
 
-function loadConfig() {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEYS.config)) || { apiKey: "", clientId: "" };
-  } catch {
-    return { apiKey: "", clientId: "" };
+function showConfigHint() {
+  if (isConfigMissing()) {
+    refs.configHint.textContent = "Developer setup needed: edit APP_CONFIG in app.js with your OAuth Client ID and API Key.";
+    return;
   }
+
+  refs.configHint.textContent = "Configured by app owner. Just sign in and refresh feed.";
 }
 
-function saveConfig(config) {
-  state.config = config;
-  localStorage.setItem(STORAGE_KEYS.config, JSON.stringify(config));
-}
-
-function saveConfigFromInputs() {
-  const nextConfig = {
-    clientId: refs.clientIdInput.value.trim(),
-    apiKey: refs.apiKeyInput.value.trim(),
-  };
-
-  saveConfig(nextConfig);
-  setStatus("Keys saved. Now click Sign in with Google.");
+function isConfigMissing() {
+  return APP_CONFIG.clientId.includes("REPLACE_WITH") || APP_CONFIG.apiKey.includes("REPLACE_WITH");
 }
 
 async function initializeGoogleApi() {
-  await new Promise((resolve) => gapi.load("client", resolve));
-
-  if (!state.config.apiKey) {
-    setStatus("Enter API key and client ID, then click Save keys.");
-    return;
+  if (isConfigMissing()) {
+    throw new Error("APP_CONFIG is not set in app.js");
   }
 
+  await new Promise((resolve, reject) => {
+    try {
+      gapi.load("client", { callback: resolve, onerror: () => reject(new Error("gapi client load failed")) });
+    } catch (error) {
+      reject(error);
+    }
+  });
+
   await gapi.client.init({
-    apiKey: state.config.apiKey,
+    apiKey: APP_CONFIG.apiKey,
     discoveryDocs: [DISCOVERY_DOC],
   });
 
-  if (!state.config.clientId) {
-    setStatus("Enter OAuth Client ID and API key, save keys, then sign in.");
-    return;
-  }
-
   tokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: state.config.clientId,
+    client_id: APP_CONFIG.clientId,
     scope: SCOPES,
-    callback: () => {
+    callback: (response) => {
+      if (response?.error) {
+        setStatus(`Sign in failed: ${response.error}`);
+        return;
+      }
+
       state.signedIn = true;
       setStatus("Signed in. Loading your subscriptions...");
       refreshFeed();
@@ -118,13 +108,13 @@ async function initializeGoogleApi() {
 }
 
 function signIn() {
-  if (!state.config.apiKey || !state.config.clientId) {
-    setStatus("Add API key and OAuth Client ID first, then save keys.");
+  if (isConfigMissing()) {
+    setStatus("App is not configured by developer yet. Add APP_CONFIG values in app.js.");
     return;
   }
 
   if (!tokenClient) {
-    setStatus("Initializing Google API... try again in a moment.");
+    setStatus("Google API still initializing. Try again in a moment.");
     return;
   }
 
@@ -132,8 +122,8 @@ function signIn() {
 }
 
 function signOut() {
-  const token = gapi.client.getToken();
-  if (token) {
+  const token = gapi?.client?.getToken?.();
+  if (token?.access_token) {
     google.accounts.oauth2.revoke(token.access_token);
     gapi.client.setToken("");
   }
@@ -159,6 +149,11 @@ async function refreshFeed() {
   try {
     const channels = await fetchAllSubscriptions();
     state.channels = channels;
+
+    if (state.filter !== "all" && !channels.some((channel) => channel.id === state.filter)) {
+      state.filter = "all";
+    }
+
     renderSubscriptions();
     renderFilterOptions();
 
@@ -169,7 +164,7 @@ async function refreshFeed() {
 
     setStatus(`Loaded ${state.videos.length} videos from ${channels.length} subscribed channels.`);
   } catch (error) {
-    setStatus(`Could not load feed: ${error.message}`);
+    setStatus(`Could not load feed: ${errorMessage(error)}`);
   }
 }
 
@@ -189,6 +184,7 @@ async function fetchAllSubscriptions() {
     items.forEach((item) => {
       const channelId = item.snippet?.resourceId?.channelId;
       if (!channelId) return;
+
       channels.push({
         id: channelId,
         name: item.snippet.title,
@@ -214,8 +210,6 @@ async function fetchRecentVideosForChannels(channels) {
     });
 
     const searchItems = searchResponse.result.items || [];
-    if (searchItems.length === 0) continue;
-
     const videoIds = searchItems.map((item) => item.id.videoId).filter(Boolean);
     if (videoIds.length === 0) continue;
 
@@ -227,19 +221,18 @@ async function fetchRecentVideosForChannels(channels) {
     const detailById = new Map((details.result.items || []).map((item) => [item.id, item]));
 
     searchItems.forEach((item) => {
-      const id = item.id.videoId;
-      const full = detailById.get(id);
-      if (!full) return;
-      if (isShort(full)) return;
+      const videoId = item.id.videoId;
+      const full = detailById.get(videoId);
+      if (!full || isShort(full)) return;
 
       allVideos.push({
-        id,
+        id: videoId,
         title: item.snippet.title,
         channelId: channel.id,
         channelName: item.snippet.channelTitle || channel.name,
         published: new Date(item.snippet.publishedAt),
         thumb: item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url || "",
-        url: `https://www.youtube.com/watch?v=${id}`,
+        url: `https://www.youtube.com/watch?v=${videoId}`,
       });
     });
   }
@@ -324,4 +317,11 @@ function formatDate(date) {
 
 function setStatus(message) {
   refs.status.textContent = message;
+}
+
+function errorMessage(error) {
+  if (typeof error === "string") return error;
+  if (error?.result?.error?.message) return error.result.error.message;
+  if (error?.message) return error.message;
+  return "Unknown error";
 }

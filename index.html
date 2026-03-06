@@ -27,25 +27,14 @@
         <button id="refreshBtn">Refresh subscriptions feed</button>
       </div>
 
-      <div class="config-row">
-        <label>
-          Google OAuth Client ID
-          <input id="clientIdInput" placeholder="xxxxx.apps.googleusercontent.com" />
-        </label>
-        <label>
-          YouTube Data API Key
-          <input id="apiKeyInput" placeholder="AIza..." />
-        </label>
-        <button id="saveConfigBtn" class="ghost">Save keys</button>
-      </div>
-
       <div class="sub-controls">
         <select id="channelFilter">
           <option value="all">All subscriptions</option>
         </select>
       </div>
 
-      <p class="helper">One-time setup: add your OAuth Client ID and API key, click <b>Save keys</b>, then sign in. After that, this app fetches your subscriptions automatically from your logged-in YouTube account.</p>
+      <p class="helper">No manual channel entry needed. This app loads your subscriptions automatically after sign-in.</p>
+      <p class="helper" id="configHint"></p>
     </section>
 
     <main>

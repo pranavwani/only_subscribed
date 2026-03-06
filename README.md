@@ -1,24 +1,29 @@
 # Only Subscribed
 
-A lightweight web app that directly loads videos from your **logged-in YouTube subscriptions**.
+A lightweight web app that loads videos from your **logged-in YouTube subscriptions**.
 
 ## Core behavior
 
-- Pulls your subscribed channels automatically (no manual channel entry).
+- Pulls subscribed channels automatically (no manual channel entry).
 - Shows latest videos in grid or list.
 - No recommendations, no comments, no Shorts.
-- Lets you filter by specific subscribed channel.
+- Lets you filter by subscribed channel.
 
-## Setup
+## Important note about OAuth Client ID
 
-This app uses the YouTube Data API v3 from the browser.
+Yes, asking every user for OAuth credentials is poor UX. This app is now configured by the app owner/developer in code (`APP_CONFIG` in `app.js`), and end users only click **Sign in with Google**.
+
+Also: OAuth **Client ID is public by design** for browser apps (not a secret). The API key should be origin-restricted in Google Cloud.
+
+## Setup (for app owner)
 
 1. Create a Google Cloud project.
 2. Enable **YouTube Data API v3**.
 3. Create:
-   - an **API Key**
-   - an **OAuth 2.0 Client ID** (Web application)
-4. Add your local origin (for example `http://localhost:4173`) to allowed JavaScript origins.
+   - OAuth 2.0 Client ID (Web application)
+   - API Key (restrict by HTTP referrer/origin)
+4. Add your app origin (for example `http://localhost:4173`) to OAuth allowed JavaScript origins.
+5. Edit `app.js` and set `APP_CONFIG.clientId` and `APP_CONFIG.apiKey`.
 
 ## Run locally
 
@@ -27,12 +32,3 @@ python -m http.server 4173
 ```
 
 Open `http://localhost:4173`.
-
-## Use
-
-1. Paste your OAuth Client ID and API Key.
-2. Click **Save keys**.
-3. Click **Sign in with Google**.
-4. Click **Refresh subscriptions feed**.
-
-The app then fetches your subscriptions from your logged-in account automatically.
