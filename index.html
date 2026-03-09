@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Only Subscribed</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script async defer src="https://accounts.google.com/gsi/client"></script>
+    <script async defer src="https://apis.google.com/js/api.js"></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <h1>Only Subscribed</h1>
+        <p>Directly shows videos from your YouTube subscriptions only. No recommendations, comments, or Shorts.</p>
+      </div>
+      <div class="layout-switch" role="group" aria-label="Layout switcher">
+        <button id="gridBtn" class="active">Grid</button>
+        <button id="listBtn">List</button>
+      </div>
+    </header>
+
+    <section class="controls">
+      <div class="auth-row">
+        <button id="signInBtn">Sign in with Google</button>
+        <button id="signOutBtn" class="ghost">Sign out</button>
+        <button id="refreshBtn">Refresh subscriptions feed</button>
+      </div>
+
+      <div class="sub-controls">
+        <select id="channelFilter">
+          <option value="all">All subscriptions</option>
+        </select>
+      </div>
+
+      <p class="helper">No manual channel entry needed. This app loads your subscriptions automatically after sign-in.</p>
+      <p class="helper" id="configHint"></p>
+    </section>
+
+    <main>
+      <section id="subscriptionPanel" class="panel">
+        <h2>Your subscriptions</h2>
+        <ul id="subscriptions"></ul>
+      </section>
+
+      <section class="panel feed-panel">
+        <div class="feed-head">
+          <h2>Latest videos</h2>
+          <p id="statusText" class="status">Ready</p>
+        </div>
+        <div id="videos" class="videos grid"></div>
+      </section>
+    </main>
+
+    <template id="videoTemplate">
+      <article class="video-card">
+        <img class="thumb" alt="Video thumbnail" loading="lazy" />
+        <div class="video-info">
+          <h3 class="title"></h3>
+          <p class="meta"></p>
+          <button class="play-here" type="button">Play here</button>
+          <a class="watch" target="_blank" rel="noopener noreferrer">Watch on YouTube</a>
+        </div>
+      </article>
+    </template>
+
+    <dialog id="playerDialog" class="player-dialog">
+      <form method="dialog" class="player-head">
+        <p id="playerTitle" class="player-title">Now playing</p>
+        <button id="closePlayerBtn" class="ghost" type="submit">Close</button>
+      </form>
+      <div class="player-shell">
+        <iframe
+          id="playerFrame"
+          title="YouTube player"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen
+        ></iframe>
+      </div>
+    </dialog>
+
+    <script src="app.js"></script>
+  </body>
+</html>
